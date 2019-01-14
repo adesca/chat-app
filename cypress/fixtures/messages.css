@@ -1,0 +1,57 @@
+.msg {
+    background: #eef8ff;
+    min-width: 50px;
+    padding: 0 10px;
+    border-radius: 2px;
+    word-break: break-all;
+    height: 100%;
+    position: relative;
+}
+
+.msg .user {
+    font-size: 14px;
+    margin: 0 0 2px 0;
+    color: #666;
+    font-weight: 700;
+    margin-top: -2px;
+    margin-bottom: 5px;
+}
+
+.msg p {
+    font-size: 13px;
+    margin: 0 0 2px 0;
+    color: #777;
+    transition: all .2s ease;
+}
+
+.msg time {
+    /*font-size: 0.7rem;*/
+    color: rgba(0,0,0,.35);
+    float: right;
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    /*margin-top: auto;*/
+}
+
+.msg time:before{
+    content:"\1F551";
+    color: #ddd;
+    display: inline-block;
+    margin-right: 4px;
+}
+
+.other, .self {
+    width: 90%;
+    height: 8%;
+    margin-top: 2%;
+}
+
+.self {
+    float: right;
+}
+
+.self .msg {
+    background-color: #E5ECF2;
+}
+

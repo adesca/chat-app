@@ -1,0 +1,4 @@
+cypress/integration/examples/
+node_modules/
+app/*.js
+build.js

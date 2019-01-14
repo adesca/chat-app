@@ -1,0 +1,22 @@
+{
+  "name": "chat-app",
+  "version": "1.0.0",
+  "description": "",
+  "main": "chat.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build:e2e": "tsc && browserify -e entry.js -o build.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/sockjs-client": "^1.1.0",
+    "@types/stompjs": "^2.3.4",
+    "browserify": "^16.2.3",
+    "cypress": "^3.1.4",
+    "sockjs-client": "^1.3.0",
+    "stompjs": "^2.3.3",
+    "typescript": "^3.2.2"
+  }
+}

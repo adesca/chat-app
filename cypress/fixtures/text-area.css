@@ -1,0 +1,23 @@
+
+textarea {
+    margin-top: auto;
+
+    width: 90%;
+    height: 6%;
+
+    z-index: 100;
+    background: #fafafa;
+    border: none;
+    outline: none;
+    padding-left: 2%;
+    padding-right: 2%;
+    padding-top: 2%;
+    color: #666;
+    font-weight: 400;
+    border-top-right-radius: 10px;
+    border-top-left-radius: 10px;
+    overflow: hidden;
+    resize: none;
+    box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
+    /*transition: all .4s cubic-bezier(0.565, -0.260, 0.255, 1.410);*/
+}
