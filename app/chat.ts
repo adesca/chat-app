@@ -1,36 +1,52 @@
 import {fetchResourceAsString} from "./util";
 import SockJS from "sockjs-client";
 import {over} from "stompjs";
+import {IView, NoopView, View} from "./view";
+import {Message} from "./models";
+import {Observable, Subject} from "rxjs";
 
 export class Chat {
+    view: IView;
+    socket = new SockJS('http://localhost:8080/chat');
+    stompClient = over(this.socket);
+
+    messagesObservable: Subject<Message> = new Subject();
+
     constructor(private sidebarEl: HTMLDivElement) {
-        this.createChat(sidebarEl);
-    }
+        if (sidebarEl) {
+            this.view = new View(sidebarEl);
+        } else {
+            this.view = new NoopView();
+        }
 
+        this.view.renderChat().then(() => {
+            const that = this;
 
-    private async createChat(sidebarEl: HTMLDivElement) {
-        fetchResourceAsString('chat-area.html').then(chatHtml => {
-            this.sidebarEl.innerHTML = chatHtml;
+            this.stompClient.connect({}, function (frame) {
+                that.subscribeToChannel<Message>('/topic/messages').subscribe(message => {
 
-            // const socket2 = createServer('http://localhost:8080/chat');
-            const socket = new SockJS('http://localhost:8080/chat');
-            const stompClient = over(socket);
-
-            stompClient.connect({}, function (frame) {
-                // setConnected(true);
-                console.log('Connected');
-                stompClient.subscribe('/topic/messages', function (message) {
-                    console.log('message ', message);
                 });
 
-                stompClient.send('/app/chat/aTopic', {}, '{}');
-
-                stompClient.subscribe('/queue/init', function (greeting) {
-                    console.log('greeting ', greeting);
-                    // showGreeting(JSON.parse(greeting.body).content);
+                that.subscribeToChannel<Message>('/user/queue/me').subscribe(message => {
+                    that.view.updateUserInfo(message.name, message.room);
                 });
+
+
+                const greeting: Message = {room: that.view.getRoom(), name: that.view.getName()};
+                that.stompClient.send('/app/register', {}, JSON.stringify(greeting));
             });
         })
+    }
+
+    subscribeToChannel<T extends Message>(channel: string): Observable<T> {
+        const messageSubscribable = new Subject<T>();
+        this.stompClient.subscribe(channel, message => {
+            console.log('Bubbling message ', message);
+            const parsedMessage: T = JSON.parse(message.body);
+            messageSubscribable.next(parsedMessage)
+        })
+
+        return messageSubscribable;
 
     }
 }
