@@ -19,7 +19,7 @@
 
 .msg p {
     font-size: 13px;
-    margin: 0 0 2px 0;
+    margin: 0 0 20px 0;
     color: #777;
     transition: all .2s ease;
 }
@@ -31,6 +31,7 @@
     position: absolute;
     bottom: 5px;
     right: 5px;
+
     /*margin-top: auto;*/
 }
 

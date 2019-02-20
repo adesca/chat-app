@@ -17,6 +17,6 @@ export const fetchResourceAsString = async (resourceName: string) => {
 
 };
 
-export const fillTemplate = function (templateString: string, templateVars: string[]) {
-    return new Function("return `" + templateString + "`;").call(templateVars);
+export const fillTemplate = function (templateString: string, context: {[key: string]: string}) {
+    return new Function("return `" + templateString + "`;").call(context);
 };

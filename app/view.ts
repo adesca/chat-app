@@ -1,28 +1,42 @@
-import {fetchResourceAsString} from "./util";
+import {fetchResourceAsString, fillTemplate} from "./util";
 import {fromEvent} from "rxjs";
-import {filter} from "rxjs/operators";
+import {filter, tap} from "rxjs/operators";
+import {ChatMessage, Message} from "./models";
+import {Chat} from "./chat";
 
 export class View implements IView {
     container: HTMLElement;
 
-    constructor(private containingEl: HTMLDivElement) {
+    constructor(private containingEl: HTMLDivElement, private chat: Chat) {
         this.container = containingEl;
     }
 
     renderChat: () => Promise<void> = async () => {
         this.container.innerHTML = await fetchResourceAsString('chat-area.html');
-        fromEvent(this.getElOrThrow('textarea'), 'input')
+        this.getElOrThrow<HTMLButtonElement>('button').disabled = true;
+
+
+        fromEvent(this.getElOrThrow('button'), 'click')
+            .subscribe(click => {
+                return this.chat.register(this.getName(), this.getRoom());
+            })
+
+        fromEvent(this.getElOrThrow('textarea'), 'keydown')
             .pipe(
+                tap(event => console.log('event4$', event)),
                 // filter(event => event instanceof KeyboardEvent),
                 filter((event) => {
-                    if (event instanceof KeyboardEvent) {
-                        return event.key === 'Enter'
-                    } else {
-                        return false
+                    const evt = event as KeyboardEvent;
+                    if (evt.key === 'Enter' && evt.shiftKey === false) {
+                        return (event as KeyboardEvent).key === 'Enter';
                     }
+
+                    return false;
                 })
             )
-            .subscribe()
+            .subscribe(submissionEvent => {
+                this.chat.sendMessage()
+            })
     };
 
     getName(): string {
@@ -46,19 +60,44 @@ export class View implements IView {
         return document.querySelector('#room-input') as HTMLInputElement;
     }
 
-    private getElOrThrow<T extends HTMLElement>(selector: string) {
+    private getElOrThrow<T extends HTMLElement>(selector: string): T {
         const potentialEl = document.querySelector(selector);
         if (potentialEl) {
-            return potentialEl;
+            return potentialEl as T;
         } else {
             throw new Error('Could not find element by selector ' + selector);
         }
+    }
+
+    addMessage(message: ChatMessage): void {
+        fetchResourceAsString('user-message.html').then(html => {
+            const messageTime = new Date(message.timestamp);
+            const time = `${messageTime.toLocaleTimeString()}`;
+            const interpolatedHtml = fillTemplate(html, {
+                message: message.content,
+                time: time
+            });
+
+            const messageDiv = document.createElement('div');
+            messageDiv.innerHTML = interpolatedHtml;
+
+            this.getElOrThrow('#message-container').appendChild(messageDiv);
+        });
+    }
+
+    enableRegistration(): void {
+        this.getElOrThrow<HTMLButtonElement>('button').disabled = false;
+    }
+
+    getMessage(): string {
+        return (document.querySelector('textarea') as HTMLTextAreaElement).value;
     }
 }
 
 export class NoopView implements IView {
     name: string = 'nooper';
     room: string = '';
+    messages: Message[] = [];
     renderChat: () => Promise<void> = () => {
         return Promise.resolve();
     };
@@ -76,6 +115,17 @@ export class NoopView implements IView {
         this.room = room;
     }
 
+    addMessage(message: Message): void {
+        this.messages.push(message);
+    }
+
+    enableRegistration(): void {
+    }
+
+    getMessage(): string {
+        return "";
+    }
+
 }
 
 export interface IView {
@@ -86,4 +136,10 @@ export interface IView {
     getName(): string;
 
     updateUserInfo(name: string, room: string): void;
+
+    addMessage(message: Message): void;
+
+    enableRegistration(): void;
+
+    getMessage(): string;
 }
